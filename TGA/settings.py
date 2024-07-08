@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import dj_database_url
 import os
 from pathlib import Path
 from decouple import config
@@ -22,6 +23,8 @@ SECRET_KEY = config('SECRET_KEY')
 
 # Load debug setting from environment variables
 DEBUG = config('DEBUG', default=False, cast=bool)
+PROD = True
+
 
 ALLOWED_HOSTS = []
 
@@ -42,6 +45,7 @@ INSTALLED_APPS = [
 # Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -74,16 +78,26 @@ TEMPLATES = [
 WSGI_APPLICATION = 'TGA.wsgi.application'
 
 # Database configuration
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('POSTGRES_DATABASE', default='tga'),
-        'USER': config('POSTGRES_USER', default='postgres'),
-        'PASSWORD': config('POSTGRES_PASSWORD', default='postgres'),
-        'HOST': config('POSTGRES_HOST', default='localhost'),
-        'PORT': config('POSTGRES_PORT', default='5432'),
+
+if PROD:
+    DATABASES = {
+    'default': dj_database_url.config(
+        # Replace this value with your local database's connection string.
+        default='postgresql://tga_user:YbugJATXG9n8H8VVVVOUxwqP7y5pQNYK@dpg-cq5kmfdds78s73d36eb0-a/tga',
+        conn_max_age=600
+    )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('POSTGRES_DATABASE', default='tga'),
+            'USER': config('POSTGRES_USER', default='postgres'),
+            'PASSWORD': config('POSTGRES_PASSWORD', default='postgres'),
+            'HOST': config('POSTGRES_HOST', default='localhost'),
+            'PORT': config('POSTGRES_PORT', default='5432'),
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -107,9 +121,22 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
+
+# This setting informs Django of the URI path from which your static files will be served to users
+# Here, they well be accessible at your-domain.onrender.com/static/... or yourcustomdomain.com/static/...
 STATIC_URL = '/static/'
 
+# This production code might break development mode, so we check whether we're in DEBUG mode
+if not DEBUG:
+    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
+    # and renames the files with unique names for each version to support long-term caching
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+    
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
