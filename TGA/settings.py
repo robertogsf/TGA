@@ -25,7 +25,6 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 PROD = True
 
-
 ALLOWED_HOSTS = []
 
 # Installed apps
@@ -78,14 +77,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'TGA.wsgi.application'
 
 # Database configuration
-
 if PROD:
     DATABASES = {
-    'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default='postgresql://tga_user:YbugJATXG9n8H8VVVVOUxwqP7y5pQNYK@dpg-cq5kmfdds78s73d36eb0-a/tga',
-        conn_max_age=600
-    )
+        'default': dj_database_url.config(
+            # Replace this value with your local database's connection string.
+            default='postgresql://tga_user:YbugJATXG9n8H8VVVVOUxwqP7y5pQNYK@dpg-cq5kmfdds78s73d36eb0-a/tga',
+            conn_max_age=600
+        )
     }
 else:
     DATABASES = {
@@ -124,19 +122,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-# This setting informs Django of the URI path from which your static files will be served to users
-# Here, they well be accessible at your-domain.onrender.com/static/... or yourcustomdomain.com/static/...
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# This production code might break development mode, so we check whether we're in DEBUG mode
-if not DEBUG:
-    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
-    # and renames the files with unique names for each version to support long-term caching
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Media files (uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-    
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
